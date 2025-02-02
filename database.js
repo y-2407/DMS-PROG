@@ -16,12 +16,12 @@ const sendQuery = async (sql, doCommit, ...params) => {
         throw err
     } finally {
         if (conn)
-            conn.end()
+            conn.release()
         return(result)
     }
 }
 
-const findOneUser = async (username) => sendQuery(`SELECT * FROM users WHERE username = ?`, true, username);
+const findOneUser = async (username) => sendQuery(`SELECT * FROM users WHERE username = ?`, false, username);
 
 const getAllData = async () => 
     sendQuery(`SELECT * FROM data`);
@@ -38,6 +38,30 @@ const addOneUser = async (username, password) =>
 const addData = ({id, Firstname, Surname, userid}) =>
     sendQuery(`INSERT INTO data (id, Firstname, Surname, userid) VALUES (?, ?, ?, ?)`, true, id, Firstname, Surname, userid);
 
+const getUsersRecords = async () => {
+    const res = await sendQuery(`CALL users records`);
+    console.log(res);
+    return res[0];
+}
+
+const generateRandomUser = async (maxUsers) => {
+    const result = await sendQuery (`CALL generateRandomUser(?)`, [maxUsers]);
+    console.log(result);
+    return result[0];
+} 
+
+//const getUsersRecords = async () =>
+//   sendQuery(`SELECT * FROM users_records`);
+
+
+
+/*
+const getUsersRecords = () =>
+    sendQuery(`SELECT a.username, count(b.userid) AS 'Users records'
+    FROM users AS a JOIN data AS b ON a.username = b.userid
+    GROUP BY a.username`);
+*/
+
 /*
 const getUserByName = (username) => 
     sendQuery(`SELECT * FROM users WHERE username = ?`, false, username);
@@ -46,6 +70,8 @@ const deleteData = (id, userid) =>
     sendQuery(`DELETE FROM data WHERE id = ? AND userid = ?`, true, id, userid);
 */
 export {
+    generateRandomUser,
+    getUsersRecords,
     addOneUser,
     getAllUsers,
     findOneUser,
